@@ -15,7 +15,7 @@ distributions.</p>
 
 ## Install
 
-    sudo snap install android-studio --classic
+    sudo snap install android-studio-canary --classic
 
 ([Don't have snapd installed?](https://snapcraft.io/docs/core/install))
 

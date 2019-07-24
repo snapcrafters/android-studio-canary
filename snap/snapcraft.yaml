@@ -9,6 +9,7 @@ description: |
   World-class code editing, debugging, performance tooling, a flexible build
   system, and an instant build/deploy system all allow you to focus on
   building unique and high quality apps.
+base: core18
 
 grade: stable
 confinement: classic
@@ -22,14 +23,6 @@ apps:
     desktop: android-studio-canary.desktop
 
 parts:
-  gnome:
-    plugin: nil
-    build-packages:
-      - software-properties-common
-    override-pull: |
-      add-apt-repository -y ppa:ubuntu-desktop/gnome-3-26
-      apt -y update
-      apt -y upgrade
   desktop:
     after:
       - android-studio
@@ -38,7 +31,6 @@ parts:
     prime:
       - android-studio-canary.desktop
   android-studio:
-    after: [gnome]
     plugin: nil
     override-build: |
       snapcraftctl build

@@ -15,9 +15,8 @@ def get_latest_studio_url():
 
     if len(links) == 0:
         raise ValueError('Url matching our query not found.')
-    elif len(links) > 1:
-        raise RuntimeError('Multiple urls found, expected only one, urls are: {}'.format(' '.join(links)))
 
+    links.sort(reverse = True)
     url = links[0][0]
     version = url.split('/')[-2]
     return version, url

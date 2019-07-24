@@ -9,6 +9,7 @@ description: |
   World-class code editing, debugging, performance tooling, a flexible build
   system, and an instant build/deploy system all allow you to focus on
   building unique and high quality apps.
+base: core18
 
 grade: stable
 confinement: classic
@@ -22,39 +23,28 @@ apps:
     desktop: android-studio-canary.desktop
 
 parts:
-  gnome:
-    plugin: nil
-    build-packages:
-      - software-properties-common
-    override-pull: |
-      add-apt-repository -y ppa:ubuntu-desktop/gnome-3-26
-      apt -y update
-      apt -y upgrade
   desktop:
-    after:
-      - android-studio
     plugin: dump
-    source: .
+    source: snap/local
     prime:
       - android-studio-canary.desktop
   android-studio:
-    after: [gnome]
+    after: [desktop]
     plugin: nil
     override-build: |
       snapcraftctl build
       echo "Get latest release..."
-      RELEASE_INFO=$(python3 -u get_latest.py)
+      RELEASE_INFO=$(python3 -u $SNAPCRAFT_STAGE/get_latest.py)
       VERSION=$(echo $RELEASE_INFO | cut -d ' ' -f1)
       echo $VERSION > $SNAPCRAFT_STAGE/version
       DOWNLOAD_URL=$(echo ${RELEASE_INFO} | cut -d ' ' -f2)
 
-      wget --quiet "${DOWNLOAD_URL}" -O "${SNAPCRAFT_PART_INSTALL}/android-studio.zip"
-      unzip -q "${SNAPCRAFT_PART_INSTALL}/android-studio.zip" -d "${SNAPCRAFT_PART_INSTALL}"
+      wget --quiet "${DOWNLOAD_URL}" -O "${SNAPCRAFT_PART_INSTALL}/android-studio.tgz"
+      tar zxvf "${SNAPCRAFT_PART_INSTALL}/android-studio.tgz" -C "${SNAPCRAFT_PART_INSTALL}"
 
       # Cleanup
-      rm "${SNAPCRAFT_PART_INSTALL}/android-studio.zip"
+      rm "${SNAPCRAFT_PART_INSTALL}/android-studio.tgz"
     build-packages:
-      - unzip
       - wget
       - python3
     build-attributes:

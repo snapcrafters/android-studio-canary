@@ -1,6 +1,5 @@
 name: android-studio-canary
-version: latest
-version-script: cat $SNAPCRAFT_STAGE/version
+adopt-info: android-studio-canary
 summary: The IDE for Android (Canary build)
 description: |
   Android Studio provides the fastest tools for building apps on every type
@@ -28,22 +27,24 @@ parts:
     source: snap/local
     prime:
       - android-studio-canary.desktop
-  android-studio:
+  android-studio-canary:
     after: [desktop]
     plugin: nil
     override-build: |
       snapcraftctl build
       echo "Get latest release..."
       RELEASE_INFO=$(python3 -u $SNAPCRAFT_STAGE/get_latest.py)
-      VERSION=$(echo $RELEASE_INFO | cut -d ' ' -f1)
-      echo $VERSION > $SNAPCRAFT_STAGE/version
-      DOWNLOAD_URL=$(echo ${RELEASE_INFO} | cut -d ' ' -f2)
 
+      # Download
+      DOWNLOAD_URL=$(echo ${RELEASE_INFO} | cut -d ' ' -f2)
       wget --quiet "${DOWNLOAD_URL}" -O "${SNAPCRAFT_PART_INSTALL}/android-studio.tgz"
       tar zxvf "${SNAPCRAFT_PART_INSTALL}/android-studio.tgz" -C "${SNAPCRAFT_PART_INSTALL}"
 
       # Cleanup
       rm "${SNAPCRAFT_PART_INSTALL}/android-studio.tgz"
+
+      # Set version
+      snapcraftctl set-version $(echo $RELEASE_INFO | cut -d ' ' -f1)
     build-packages:
       - wget
       - python3

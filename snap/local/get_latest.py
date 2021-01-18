@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from bs4 import BeautifulSoup
 import re
 import urllib.request
 
@@ -9,16 +10,15 @@ def get_latest_studio_url():
     with urllib.request.urlopen(URL_STUDIO_HOME) as response:
         html = response.read().decode()
 
-    matched = re.findall('"((https)?://.*linux.tar.gz)"', html)
-    # Ensure unique and then convert to a list of easy access.
-    links = list(set(matched))
+    bs = BeautifulSoup(html, "html.parser")
+    result = bs.find('a', {'data-category': 'canary_linux_bundle_download', 'data-action': 'download'})
 
-    if len(links) == 0:
+    if result is None:
         raise ValueError('Url matching our query not found.')
 
-    links.sort(reverse = True)
-    url = links[0][0]
+    url = result['href']
     version = url.split('/')[-2]
+
     return version, url
 
 

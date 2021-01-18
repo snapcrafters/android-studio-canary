@@ -48,5 +48,6 @@ parts:
     build-packages:
       - wget
       - python3
+      - python3-bs4
     build-attributes:
       - no-patchelf

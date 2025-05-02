@@ -1,5 +1,5 @@
 name: android-studio-canary
-adopt-info: android-studio-canary
+version: 2025.1.1.9
 summary: The IDE for Android (Canary build)
 description: |
   Android Studio provides the fastest tools for building apps on every type
@@ -8,7 +8,7 @@ description: |
   World-class code editing, debugging, performance tooling, a flexible build
   system, and an instant build/deploy system all allow you to focus on
   building unique and high quality apps.
-base: core18
+base: core22
 
 grade: stable
 confinement: classic
@@ -18,36 +18,13 @@ architectures:
 
 apps:
   android-studio-canary:
-    command: android-studio/bin/studio.sh
-    desktop: android-studio-canary.desktop
+    command: bin/studio.sh
+    environment:
+      PULSE_SERVER: $XDG_RUNTIME_DIR/pulse/native
 
 parts:
-  desktop:
-    plugin: dump
-    source: snap/local
-    prime:
-      - android-studio-canary.desktop
   android-studio-canary:
-    after: [desktop]
-    plugin: nil
-    override-build: |
-      snapcraftctl build
-      echo "Get latest release..."
-      RELEASE_INFO=$(python3 -u $SNAPCRAFT_STAGE/get_latest.py)
-
-      # Download
-      DOWNLOAD_URL=$(echo ${RELEASE_INFO} | cut -d ' ' -f2)
-      wget --quiet "${DOWNLOAD_URL}" -O "${SNAPCRAFT_PART_INSTALL}/android-studio.tgz"
-      tar zxvf "${SNAPCRAFT_PART_INSTALL}/android-studio.tgz" -C "${SNAPCRAFT_PART_INSTALL}"
-
-      # Cleanup
-      rm "${SNAPCRAFT_PART_INSTALL}/android-studio.tgz"
-
-      # Set version
-      snapcraftctl set-version $(echo $RELEASE_INFO | cut -d ' ' -f1)
-    build-packages:
-      - wget
-      - python3
-      - python3-bs4
+    plugin: dump
+    source: https://redirector.gvt1.com/edgedl/android/studio/ide-zips/2025.1.1.9/android-studio-2025.1.1.9-linux.tar.gz
     build-attributes:
       - no-patchelf

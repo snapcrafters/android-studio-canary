@@ -2,8 +2,8 @@
 Version=1.0
 Type=Application
 Name=Android Studio Canary
-Icon=/android-studio/bin/studio.png
-Exec="/android-studio/bin/studio.sh" %f
+Icon=${SNAP}/bin/studio.png
+Exec=android-studio-canary %f
 Comment=Android Studio Canary
 Categories=Development;IDE;
 Terminal=false

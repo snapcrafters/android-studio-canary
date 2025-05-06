@@ -1,0 +1,58 @@
+name: Update Canary version
+
+on:
+  # Runs every hour at 00 mins
+  schedule:
+    - cron:  '0 * * * *'
+  push:
+    branches: [ "master" ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install beautifulsoup4
+
+      - name: Run get_latest_studio_url
+        id: studio_url
+        run: |
+          python -c "from snap.local.get_latest import get_latest_studio_url; version, url = get_latest_studio_url(); open('latest_url.txt', 'w').write(url); open('latest_version.txt', 'w').write(version)"
+
+      - name: Read new URL
+        id: read_url
+        run: echo "url=$(cat latest_url.txt)" >> $GITHUB_OUTPUT
+
+      - name: Read new Version
+        id: read_version
+        run: echo "version=$(cat latest_version.txt)" >> $GITHUB_OUTPUT
+
+      - name: Update url in snapcraft.yaml
+        run: |
+          sed -i "s|^\(\s*source:\s*\).*|\1${{ steps.read_url.outputs.url }}|" snap/snapcraft.yaml
+
+      - name: Update version in snapcraft.yaml
+        run: |
+          sed -i "s|^\(\s*version:\s*\).*|\1${{ steps.read_version.outputs.version }}|" snap/snapcraft.yaml
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add snap/snapcraft.yaml
+          git diff --cached --quiet || git commit -m "Update Snapcraft source URL"
+          git push origin master

@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  # Runs every hour at 05 mins 
+  schedule:
+    - cron:  '5 * * * *'
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  get-architectures:
+    name: 🖥 Get snap architectures
+    runs-on: ubuntu-latest
+    outputs:
+      architectures: ${{ steps.get-architectures.outputs.architectures }}
+      architectures-list: ${{ steps.get-architectures.outputs.architectures-list }}
+    steps:
+      - name: 🖥 Get snap architectures
+        id: get-architectures
+        uses: snapcrafters/ci/get-architectures@main
+
+  release:
+    name: 🚢 Release to latest/candidate
+    needs: get-architectures
+    runs-on: ubuntu-latest
+    environment: "Master Branch"
+    strategy:
+      matrix:
+        architecture: ${{ fromJSON(needs.get-architectures.outputs.architectures-list) }}
+    steps:
+      - name: 🚢 Release to latest/candidate
+        uses: snapcrafters/ci/release-to-candidate@main
+        with:
+          architecture: ${{ matrix.architecture }}
+          launchpad-token: ${{ secrets.LP_BUILD_SECRET }}
+          repo-token: ${{ secrets.SNAPCRAFTERS_BOT_COMMIT }}
+          store-token: ${{ secrets.SNAP_STORE_CANDIDATE }}
+          
+  promote:
+    name: ⬆️ Promote to stable
+    environment: "Master Branch"
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬆️ Promote to stable
+        uses: snapcrafters/ci/promote-to-stable@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          store-token: ${{ secrets.SNAP_STORE_STABLE }}

@@ -77,10 +77,6 @@ Now that your git metadata has been updated you are ready to create a bugfix bra
 6. Someone from the team will review the open pull request and either merge it or start a discussion with you with additional changes or clarification needed.
 7. Once the pull request has been merged into the stable branch, a GitHub action will rebuild the snap using your changes and publish it to the [Snap Store](https://snapcraft.io/android-studio-canary) into the `candidate` channel. After sufficient testing of the snap from the candidate channel, one of the maintainers or administrators will promote the snap to the stable branch in the Snap Store.
 
-## Maintainers
-
-- [@jnsgruk](https://github.com/jnsgruk/)
-
 ## License
 
 The scripts and documentation in this project are released under the [MIT License](LICENSE).

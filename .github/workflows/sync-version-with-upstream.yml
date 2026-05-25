@@ -1,0 +1,49 @@
+name: Sync version with upstream
+on:
+  schedule:
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  sync:
+    name: 🔄 Sync version with upstream
+    environment: "Candidate Branch"
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔄 Sync version with upstream
+        uses: snapcrafters/ci/sync-version@main
+        with:
+          token: ${{ secrets.SNAPCRAFTERS_BOT_COMMIT }}
+          update-script: |
+            pip install beautifulsoup4 --quiet
+
+            python3 - <<'EOF'
+            from bs4 import BeautifulSoup
+            import urllib.request, re, sys
+
+            with urllib.request.urlopen('https://developer.android.com/studio/preview/index.html') as r:
+                html = r.read().decode()
+
+            bs = BeautifulSoup(html, 'html.parser')
+            result = bs.find('a', {'data-category': 'canary_linux_bundle_download', 'data-action': 'download'})
+            if result is None:
+                print('ERROR: download link not found', file=sys.stderr)
+                sys.exit(1)
+
+            url = result['href']
+            version = url.split('/')[-2]
+
+            with open('snap/snapcraft.yaml', 'r') as f:
+                content = f.read()
+
+            content = re.sub(r'^(version:\s*).*$', f'\\g<1>{version}', content, flags=re.MULTILINE)
+            content = re.sub(r'^(\s*source:\s*)https://.*$', f'\\g<1>{url}', content, flags=re.MULTILINE)
+
+            with open('snap/snapcraft.yaml', 'w') as f:
+                f.write(content)
+
+            print(f'Updated to version {version}')
+            print(f'Source URL: {url}')
+            EOF

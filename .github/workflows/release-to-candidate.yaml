@@ -1,11 +1,9 @@
 name: Release
 
 on:
-  # Runs every hour at 05 mins 
-  schedule:
-    - cron:  '5 * * * *'
+  # Run the workflow each time new commits are pushed to the candidate branch. 
   push:
-    branches: [ "master" ]
+    branches: [ "candidate" ]
   workflow_dispatch:
 
 concurrency:
@@ -32,7 +30,7 @@ jobs:
     name: 🚢 Release to latest/candidate
     needs: get-architectures
     runs-on: ubuntu-latest
-    environment: "Master Branch"
+    environment: "Candidate Branch"
     strategy:
       matrix:
         architecture: ${{ fromJSON(needs.get-architectures.outputs.architectures-list) }}
@@ -44,14 +42,31 @@ jobs:
           launchpad-token: ${{ secrets.LP_BUILD_SECRET }}
           repo-token: ${{ secrets.SNAPCRAFTERS_BOT_COMMIT }}
           store-token: ${{ secrets.SNAP_STORE_CANDIDATE }}
-          
-  promote:
-    name: ⬆️ Promote to stable
-    environment: "Master Branch"
+  
+  call-for-testing:
+    name: 📣 Create call for testing
+    needs: [release, get-architectures]
+    environment: "Candidate Branch"
+    runs-on: ubuntu-latest
+    outputs:
+      issue-number: ${{ steps.issue.outputs.issue-number }}
+    steps:
+      - name: 📣 Create call for testing
+        id: issue
+        uses: snapcrafters/ci/call-for-testing@main
+        with:
+          architectures: ${{ needs.get-architectures.outputs.architectures }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  screenshots:
+    name: 📸 Gather screenshots
+    needs: call-for-testing
+    environment: "Candidate Branch"
     runs-on: ubuntu-latest
     steps:
-      - name: ⬆️ Promote to stable
-        uses: snapcrafters/ci/promote-to-stable@main
+      - name: 📸 Gather screenshots
+        uses: snapcrafters/ci/get-screenshots@main
         with:
+          issue-number: ${{ needs.call-for-testing.outputs.issue-number }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          store-token: ${{ secrets.SNAP_STORE_STABLE }}
+          screenshots-token: ${{ secrets.SNAPCRAFTERS_BOT_COMMIT }}

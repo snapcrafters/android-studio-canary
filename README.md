@@ -1,5 +1,7 @@
 <h1 align="center">
-  <img src="https://dashboard.snapcraft.io/site_media/appmedia/android-studio-canary.png" alt="Android Studio Canary">
+  <img src="https://developer.android.com/static/studio/images/android-studio-canary.svg" alt="Android Studio Canary" width="256" height="256">
+  <br />
+  Android Studio Canary
 </h1>
 
 <p align="center"><b>This is the snap for Android Studio Canary</b>. It is a community-maintained package to easily install Android Studio Canary on Ubuntu, Fedora, Debian and other major Linux distributions. It is available in the Snap Store, Ubuntu Software, and a number of other applications.</p>

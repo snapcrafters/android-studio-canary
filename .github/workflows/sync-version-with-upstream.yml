@@ -39,7 +39,7 @@ jobs:
                 content = f.read()
 
             content = re.sub(r'^(version:\s*).*$', f'\\g<1>{version}', content, flags=re.MULTILINE)
-            content = re.sub(r'^(\s*source:\s*)https://redirector\.gvt1\.com/.*$', f'\\g<1>{url}', content, flags=re.MULTILINE)
+            content = re.sub(r'^(\s*source:\s*)https://.*$', f'\\g<1>{url}', content, flags=re.MULTILINE)
 
             with open('snap/snapcraft.yaml', 'w') as f:
                 f.write(content)
